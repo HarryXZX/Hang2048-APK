@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 与 Web 端棋盘背景一致的米色 -->
+    <color name="board_bg">#FAF8EF</color>
+    <color name="ic_launcher_background">#FAF8EF</color>
+</resources>

@@ -1,0 +1,36 @@
+// =============================================================================
+//  夯048 · Hang2048 —— Android 端（WebView 壳）
+//
+//  顶层构建文件：声明插件版本与仓库。
+//
+//  仓库说明：
+//    开发环境直连 dl.google.com / repo.maven.apache.org 可能受限，
+//    因此把国内镜像放在前面。镜像没命中时会自动回落到官方源。
+//    如果你在能直连的环境，可以把 mirrors 部分删掉。
+// =============================================================================
+
+pluginManagement {
+    repositories {
+        // 国内镜像优先（阿里云）
+        maven { url 'https://maven.aliyun.com/repository/gradle-plugin' }
+        maven { url 'https://maven.aliyun.com/repository/google' }
+        maven { url 'https://maven.aliyun.com/repository/public' }
+        // 官方源兜底
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
+    repositories {
+        maven { url 'https://maven.aliyun.com/repository/google' }
+        maven { url 'https://maven.aliyun.com/repository/public' }
+        google()
+        mavenCentral()
+    }
+}
+
+rootProject.name = 'Hang2048'
+include ':app'

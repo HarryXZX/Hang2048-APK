@@ -1,0 +1,392 @@
+/* ==========================================================================
+   夯048 · Hang2048 —— 界面样式（响应式 / 手机适配版）
+
+   尺寸策略：
+     所有与棋盘相关的尺寸都由 JS 按屏幕算好后写入 CSS 变量，
+     CSS 里不再出现写死的棋盘像素值。相关变量定义在 :root，
+     由 renderer.js 的 layout() 统一赋值。
+
+     桌面版（Electron 预览壳）与手机端共用这一份 CSS。
+   ========================================================================== */
+
+:root {
+  /* 以下变量在运行时由 renderer.js 覆盖 */
+  --app-w: 550px;      /* 应用可用宽度 */
+  --app-h: 600px;      /* 应用可用高度 */
+  --board: 500px;      /* 棋盘边长 */
+  --cell: 110px;       /* 单个格子边长 */
+  --gap: 12px;         /* 格子间距 */
+  --tile-radius: 10px; /* 棋子圆角 */
+  --board-radius: 12px;/* 棋盘圆角 */
+  --font-base: 16px;   /* 字号基准，随格子缩放 */
+
+  /* 安全区（刘海屏 / 手势条），由 JS 从 env() 读不到时兜底为 0 */
+  --safe-top: 0px;
+  --safe-bottom: 0px;
+  --safe-left: 0px;
+  --safe-right: 0px;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #faf8ef;
+  font-family: "Microsoft YaHei", "PingFang SC", "Segoe UI", sans-serif;
+  /* 触屏关键：禁止 WebView 自身的滚动/回弹/缩放抢走手势 */
+  overscroll-behavior: none;
+  touch-action: none;
+  position: fixed;
+  inset: 0;
+}
+
+/* ---------- 应用主体 ---------- */
+#app {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  /* 安全区内边距：避开刘海与手势条 */
+  padding-top: calc(var(--safe-top) + var(--pad-top));
+  padding-bottom: calc(var(--safe-bottom) + var(--pad-bottom));
+  padding-left: calc(var(--safe-left) + var(--pad-side));
+  padding-right: calc(var(--safe-right) + var(--pad-side));
+  --pad-top: 10px;
+  --pad-bottom: 10px;
+  --pad-side: 12px;
+  gap: var(--pad-top);
+}
+
+/* ---------- 顶部信息栏 ---------- */
+/* 宽度跟随棋盘：棋盘在平板上受高度限制会窄于屏幕，
+   顶部栏若撑满整屏会显得割裂。用 CSS 变量统一约束。 */
+.header {
+  width: var(--board);
+  max-width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex: 0 0 auto;
+  /* 桌面版窗口拖动区域；手机端无副作用 */
+  -webkit-app-region: drag;
+}
+
+.title {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.title h1 {
+  font-size: calc(var(--font-base) * 1.35);
+  color: #776e65;
+  white-space: nowrap;
+}
+
+.title .title-en {
+  font-size: calc(var(--font-base) * 0.7);
+  color: #a0948a;
+  font-weight: normal;
+}
+
+.title .chain {
+  font-size: calc(var(--font-base) * 0.62);
+  color: #a0948a;
+  margin-top: 2px;
+  letter-spacing: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ---------- 计分板 ---------- */
+.stats {
+  display: flex;
+  align-items: stretch;
+  gap: 6px;
+  flex: 0 0 auto;
+}
+
+.score-box {
+  background: #bbada0;
+  color: #f9f6f2;
+  border-radius: 6px;
+  padding: 4px 10px;
+  text-align: center;
+  min-width: calc(var(--font-base) * 3.6);
+}
+
+.score-label {
+  font-size: calc(var(--font-base) * 0.62);
+  color: #eee4da;
+  letter-spacing: 1px;
+}
+
+.score-value {
+  font-size: calc(var(--font-base) * 1.35);
+  font-weight: bold;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+
+.stat-box {
+  background: #bbada0;
+  color: #f9f6f2;
+  border-radius: 6px;
+  padding: 4px 10px;
+  text-align: center;
+  min-width: calc(var(--font-base) * 2.7);
+}
+
+.stat-label {
+  font-size: calc(var(--font-base) * 0.62);
+  color: #eee4da;
+  letter-spacing: 1px;
+}
+
+.stat-value {
+  font-size: calc(var(--font-base) * 1.0);
+  font-weight: bold;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+}
+
+.reset-btn {
+  background: #8f7a66;
+  color: #f9f6f2;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: calc(var(--font-base) * 0.8);
+  font-weight: bold;
+  cursor: pointer;
+  flex: 0 0 auto;
+  -webkit-app-region: no-drag;
+  font-family: inherit;
+  white-space: nowrap;
+}
+
+.reset-btn:hover {
+  background: #9f8b77;
+}
+
+.reset-btn:active {
+  transform: scale(0.95);
+}
+
+/* 窄屏（手机竖屏）时隐藏标题里的英文副名，给计分板和重置按钮腾地方 */
+@media (max-width: 460px) {
+  .title .title-en {
+    display: none;
+  }
+  .title h1 {
+    font-size: calc(var(--font-base) * 1.2);
+  }
+}
+
+/* ---------- 棋盘 ---------- */
+.board {
+  position: relative;
+  width: var(--board);
+  height: var(--board);
+  background: #bbada0;
+  border-radius: var(--board-radius);
+  flex: 0 0 auto;
+  touch-action: none;
+}
+
+.cell {
+  position: absolute;
+  width: var(--cell);
+  height: var(--cell);
+  border-radius: var(--tile-radius);
+  background: rgba(238, 228, 218, 0.35);
+}
+
+.tile {
+  position: absolute;
+  width: var(--cell);
+  height: var(--cell);
+  border-radius: var(--tile-radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  text-align: center;
+  transition: left 120ms ease, top 120ms ease;
+  z-index: 2;
+  will-change: left, top;
+}
+
+.tile.appear {
+  animation: appear 160ms ease;
+}
+
+.tile.merged {
+  animation: pop 240ms ease;
+  z-index: 3;
+}
+
+@keyframes appear {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes pop {
+  0% {
+    transform: scale(1);
+    filter: brightness(1);
+  }
+  40% {
+    transform: scale(1.28);
+    filter: brightness(1.7);
+  }
+  100% {
+    transform: scale(1);
+    filter: brightness(1);
+  }
+}
+
+/* ---------- 结束面板 ---------- */
+.overlay {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--board-radius);
+  background: rgba(238, 228, 218, 0.75);
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  gap: calc(var(--font-base) * 0.9);
+  text-align: center;
+  padding: 12px;
+}
+
+.overlay.show {
+  display: flex;
+}
+
+.overlay .msg {
+  font-size: calc(var(--font-base) * 1.9);
+  font-weight: bold;
+  color: #776e65;
+}
+
+.overlay .sub {
+  font-size: calc(var(--font-base) * 0.95);
+  color: #8f7a66;
+}
+
+.overlay .time {
+  font-size: calc(var(--font-base) * 1.5);
+  font-weight: bold;
+  color: #edc22e;
+  background: rgba(237, 194, 46, 0.18);
+  border: 2px solid #edc22e;
+  padding: 8px 22px;
+  border-radius: 28px;
+  animation: timePulse 0.9s ease-in-out infinite;
+}
+
+@keyframes timePulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+.overlay .again {
+  background: #8f7a66;
+  color: #f9f6f2;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 22px;
+  font-size: calc(var(--font-base) * 0.95);
+  font-weight: bold;
+  cursor: pointer;
+  -webkit-app-region: no-drag;
+  font-family: inherit;
+}
+
+.overlay .again:hover {
+  background: #9f8b77;
+}
+
+/* ---------- 提示气泡 ---------- */
+.toast {
+  position: absolute;
+  top: calc(var(--cell) * 0.55);
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(101, 84, 64, 0.92);
+  color: #ffe0a3;
+  padding: 8px 18px;
+  border-radius: 20px;
+  font-size: calc(var(--font-base) * 0.9);
+  font-weight: bold;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 20;
+  white-space: nowrap;
+  transition: opacity 200ms ease;
+}
+
+.toast.show {
+  opacity: 1;
+}
+
+/* ---------- 关闭按钮 ----------
+   桌面版（Electron 预览壳）显示；手机端由 JS 打上 .touch 类后隐藏，
+   改用系统返回键退出。 */
+.close-btn {
+  position: absolute;
+  top: calc(var(--safe-top) + 6px);
+  right: calc(var(--safe-right) + 10px);
+  width: 26px;
+  height: 26px;
+  border: none;
+  border-radius: 50%;
+  background: #d8cec4;
+  color: #776e65;
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+  z-index: 30;
+  -webkit-app-region: no-drag;
+}
+
+.close-btn:hover {
+  background: #c4b8ac;
+}
+
+/* 触屏设备：隐藏自绘关闭按钮 */
+body.is-touch .close-btn {
+  display: none;
+}
+
+/* 触屏设备：标题栏不参与窗口拖动（也没意义） */
+body.is-touch .header {
+  -webkit-app-region: no-drag;
+}

@@ -1,0 +1,16 @@
+// =============================================================================
+//  夯048 · Hang2048 —— Android 端（WebView 壳）
+//
+//  顶层构建文件：只声明插件版本，不在这里配置模块。
+//  仓库配置见 settings.gradle。
+// =============================================================================
+
+plugins {
+    id 'com.android.application' version '8.7.3' apply false
+    // Kotlin 插件显式声明版本，避免由 AGP 隐式带入导致 stdlib 版本不一致
+    id 'org.jetbrains.kotlin.android' version '1.9.24' apply false
+}
+
+tasks.register('clean', Delete) {
+    delete rootProject.layout.buildDirectory
+}

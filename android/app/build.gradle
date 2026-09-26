@@ -1,0 +1,161 @@
+// =============================================================================
+//  app 模块
+//
+//  这个模块只做一件事：把一个本地 WebView 跑起来，加载 assets 里的游戏。
+//  除了可选的 VIBRATE（震动反馈），不申请任何权限。
+// =============================================================================
+
+plugins {
+    id 'com.android.application'
+    id 'org.jetbrains.kotlin.android'
+}
+
+// ---------------------------------------------------------------------------
+// 签名配置
+//
+// keystore 刻意放在项目之外（见 android/keystore.properties，该文件已被忽略），
+// 项目本身可以直接公开而不会带出任何密钥材料。
+// 文件不存在时构建仍可进行：release 会退化为未签名产物。
+// ---------------------------------------------------------------------------
+def keystorePropsFile = rootProject.file('keystore.properties')
+def keystoreProps = new Properties()
+def hasKeystore = false
+
+if (keystorePropsFile.exists()) {
+    keystorePropsFile.withInputStream { keystoreProps.load(it) }
+    hasKeystore = keystoreProps['storeFile'] != null &&
+                  rootProject.file(keystoreProps['storeFile']).exists()
+}
+
+android {
+    namespace 'com.hytools.hang2048.apk'
+    compileSdk 36
+
+    // 显式指定 build-tools：AGP 默认会要 34.0.0，
+    // 但本机只装了 36.x，且受限网络下无法自动补装，会在构建期直接失败。
+    buildToolsVersion '36.0.0'
+
+    defaultConfig {
+        applicationId 'com.hytools.hang2048.apk'
+        minSdk 24
+        targetSdk 36
+        versionCode 1
+        versionName '1.0.0'
+
+        // 只保留需要的资源，减小体积
+        resourceConfigurations += ['zh', 'en']
+    }
+
+    // lintVitalRelease 需要额外下载 SDK 组件，受限网络下会失败。
+    // 纯 WebView 壳没有需要 lint 把关的原生代码，直接关掉。
+    lint {
+        checkReleaseBuilds false
+        abortOnError false
+    }
+
+    if (hasKeystore) {
+        signingConfigs {
+            release {
+                storeFile rootProject.file(keystoreProps['storeFile'])
+                storePassword keystoreProps['storePassword']
+                keyAlias keystoreProps['keyAlias']
+                keyPassword keystoreProps['keyPassword']
+                // 同时启用 v1 + v2 签名：
+                //   v2 是 Android 7+ 的标准，v1 让部分老设备/第三方安装器也能校验
+                enableV1Signing true
+                enableV2Signing true
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false          // 纯 WebView 壳，无第三方代码，无需混淆
+            shrinkResources false
+            if (hasKeystore) {
+                signingConfig signingConfigs.release
+            }
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'),
+                          'proguard-rules.pro'
+        }
+        debug {
+            applicationIdSuffix '.debug'
+            versionNameSuffix '-debug'
+        }
+    }
+
+    // 产物命名：Hang2048-<versionName>-<buildType>.apk
+    applicationVariants.configureEach { variant ->
+        variant.outputs.configureEach { output ->
+            outputFileName = "Hang2048-${variant.versionName}-${variant.buildType.name}.apk"
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    kotlinOptions {
+        jvmTarget = '17'
+    }
+
+    buildFeatures {
+        buildConfig false
+    }
+
+    packaging {
+        resources {
+            excludes += ['META-INF/*.kotlin_module']
+        }
+    }
+
+    // 让 Web 资源参与增量构建：改动 renderer/ 后重新打包会带上新内容
+    sourceSets {
+        main {
+            assets.srcDirs = ['src/main/assets']
+        }
+    }
+}
+
+// ---------------------------------------------------------------------------
+// 把 ../../renderer 同步到 assets。
+//
+// 单一数据源：Web 端代码始终在项目根的 renderer/ 下，
+// 构建时复制过来，避免出现两份需要手工同步的副本。
+// ---------------------------------------------------------------------------
+def webSrcDir = rootProject.file('../renderer')
+def webDstDir = file('src/main/assets')
+
+tasks.register('syncWebAssets', Sync) {
+    description = '把 renderer/ 同步到 app 的 assets 目录'
+    from(webSrcDir)
+    into(webDstDir)
+    // CSP 已禁止外部资源，这里不需要额外过滤
+    exclude '**/*.map'
+}
+
+tasks.register('cleanWebAssets', Delete) {
+    delete webDstDir
+}
+
+// 任何打包/构建任务前先同步资源
+tasks.matching { it.name.startsWith('merge') && it.name.endsWith('Assets') }
+     .configureEach { dependsOn 'syncWebAssets' }
+tasks.matching { it.name == 'preBuild' }
+     .configureEach { dependsOn 'syncWebAssets' }
+
+clean.dependsOn 'cleanWebAssets'
+
+dependencies {
+    implementation 'androidx.appcompat:appcompat:1.7.0'
+    implementation 'androidx.activity:activity:1.9.3'
+    implementation 'androidx.core:core:1.15.0'
+    implementation 'androidx.webkit:webkit:1.12.1'
+
+    // 用 BOM 统一 Kotlin 标准库版本。
+    // 否则间接依赖会同时拉入 kotlin-stdlib 1.8.x 与 kotlin-stdlib-jdk7/jdk8 1.6.x，
+    // 两者的类重复（kotlin.collections.jdk8.* 等），构建期 checkDuplicateClasses 直接失败。
+    implementation platform('org.jetbrains.kotlin:kotlin-bom:1.9.24')
+    implementation 'org.jetbrains.kotlin:kotlin-stdlib'
+}

@@ -1,0 +1,19 @@
+{
+  "name": "hang2048-apk",
+  "version": "1.0.0",
+  "description": "夯048（Hang2048）安卓版：零敏感权限的 WebView 应用，上下左右滑动操作",
+  "private": true,
+  "license": "MIT",
+  "author": "HYTools",
+  "scripts": {
+    "icons": "node tools/make-android-icons.cjs",
+    "smoke": "electron tools/smoke.cjs",
+    "layout": "electron tools/layout-check.cjs",
+    "apk": "node tools/build-apk.cjs",
+    "apk:debug": "node tools/build-apk.cjs --debug",
+    "verify": "node tools/verify-apk.cjs"
+  },
+  "devDependencies": {
+    "electron": "^31.0.0"
+  }
+}

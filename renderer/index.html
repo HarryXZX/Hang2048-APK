@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<!-- 触屏关键：禁止缩放；viewport-fit=cover 让内容延伸到刘海区（配合 CSS 安全区变量） -->
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="format-detection" content="telephone=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta http-equiv="Content-Security-Policy"
+      content="default-src 'none'; style-src 'self'; script-src 'self'; img-src 'self' data:;">
+<title>夯048 · Hang2048</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div id="app">
+  <div class="header">
+    <div class="title">
+      <h1>夯048 <span class="title-en">Hang2048</span></h1>
+      <div class="chain">拉完了 → NPC → 人上人 → 顶级 → 夯</div>
+    </div>
+    <div class="stats">
+      <div class="stat-box">
+        <div class="stat-label">用时</div>
+        <div class="stat-value" id="timer">00:00</div>
+      </div>
+      <div class="score-box">
+        <div class="score-label">得分</div>
+        <div class="score-value" id="score">0</div>
+      </div>
+    </div>
+    <button class="reset-btn" id="resetBtn">重置</button>
+  </div>
+
+  <div class="board" id="board">
+    <div id="grid"></div>
+    <div id="tiles"></div>
+    <div class="toast" id="toast"></div>
+    <div class="overlay" id="overlay">
+      <div class="msg" id="overMsg"></div>
+      <div class="sub" id="overSub"></div>
+      <div class="time" id="overTime">⏱ 用时 00:00</div>
+      <button class="again" id="againBtn">再来一局</button>
+    </div>
+  </div>
+
+  <button class="close-btn" id="closeBtn" title="关闭">×</button>
+</div>
+
+<script src="renderer.js"></script>
+</body>
+</html>

@@ -1,0 +1,27 @@
+# ---- 构建产物 ----
+android/build/
+android/app/build/
+android/.gradle/
+android/.idea/
+output/
+captures/
+node_modules/
+.cache/
+
+# assets 是 syncWebAssets 任务从 renderer/ 复制生成的，不进版本库
+android/app/src/main/assets/
+
+# ---- 本机相关，绝不能提交 ----
+android/local.properties
+android/keystore.properties
+*.jks
+*.keystore
+*.apk
+*.aab
+*.ap_
+*.dex
+
+# ---- 其他 ----
+*.log
+.DS_Store
+Thumbs.db
