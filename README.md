@@ -72,6 +72,37 @@ Hang2048-APK/
 └─ icon.png                     图标源文件（512×512）
 ```
 
+## 用 Android Studio 打开
+
+双击项目根目录的 **`打开AndroidStudio.bat`**；或者在 Android Studio 里 **File → Open…**，
+选中 **`Hang2048-APK\android`** 这个目录（注意是 `android` 子目录，不是外层 `Hang2048-APK`——
+`settings.gradle`、`gradlew`、`app` 都在这一层，AS 认的是「含 settings.gradle 的目录」）。
+
+### 已经替你处理好的三个坑
+
+1. **Gradle JDK 必须用 JDK 21，不能用 AS 自带的 JBR。**
+   Android Studio 2026.2 自带 **JBR 25（Java 25）**，而本项目是 Gradle 8.9 + AGP 8.7.3 + Kotlin 1.9.24：
+   Gradle 8.9 只支持 Java 1.8–22，Kotlin 1.9 在 Java 25 上会直接崩
+   （`Daemon compilation failed` / `Unsupported class file major version 69`）。所以：
+   - `android/.idea/gradle.xml` 里 `gradleJvm=#JAVA_HOME` → AS 跟随系统 `JAVA_HOME`（本机就是 JDK 21）。
+     注意 `.idea/` 不进版本库，**clone 到新机器后这个文件不存在**，首次打开请按下面第二条手动选 JDK 21；
+   - `android/gradle.properties` 里**没有**写死 `org.gradle.java.home` 的绝对路径——
+     那样会把别人的机器写死、clone 下来直接构建失败。换机器时按注释里的两条路走即可。
+
+   如果同步时报 **Incompatible Gradle JVM version**，点它给的
+   「Apply compatible Gradle JDK configuration and sync」也能自动修；或者
+   **Settings → Build, Execution, Deployment → Build Tools → Gradle → Gradle JDK** 手动选 21。
+
+2. **首次同步要下 Gradle 8.9**（约 130 MB，`gradle-wrapper.properties` 里配的是腾讯镜像）。
+
+3. **`assets/` 不在仓库里，是构建时从 `renderer/` 同步过去的**（见 `.gitignore`）。
+   首次 sync / 构建时 `syncWebAssets` 任务会自动生成 `app/src/main/assets/{index.html,renderer.js,styles.css}`，
+   所以 AS 里能正常看到这三个文件。改 `renderer/` 下的内容、重新构建就会带上新版本，
+   **不要**去直接改 `assets/` 里的副本（下次同步会被覆盖）。
+
+打开后 `app` 模块的 Run 配置已就绪，选一台设备/模拟器点 Run 即可；AS 构建与命令行
+`gradlew assembleRelease` 走同一套配置，产物命名也一致。
+
 ## 构建
 
 ### 前置环境
