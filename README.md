@@ -85,7 +85,7 @@ Hang2048-APK/
    Gradle 8.9 只支持 Java 1.8–22，Kotlin 1.9 在 Java 25 上会直接崩
    （`Daemon compilation failed` / `Unsupported class file major version 69`）。所以：
    - `android/.idea/gradle.xml` 里 `gradleJvm=#JAVA_HOME` → AS 跟随系统 `JAVA_HOME`（本机就是 JDK 21）。
-     注意 `.idea/` 不进版本库，**clone 到新机器后这个文件不存在**，首次打开请按下面第二条手动选 JDK 21；
+     注意 `.idea/` 不进版本库，**clone 到新机器后这个文件不存在**，首次打开请手动把 Gradle JDK 选成 21；
    - `android/gradle.properties` 里**没有**写死 `org.gradle.java.home` 的绝对路径——
      那样会把别人的机器写死、clone 下来直接构建失败。换机器时按注释里的两条路走即可。
 
